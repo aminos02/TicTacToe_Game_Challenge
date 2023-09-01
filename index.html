@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="App.css">
+</head>
+
+<body>
+  <div style="display: flex;justify-content: center;align-items: center;min-height: 90vh;">
+
+    <div id="board">
+      <h1>Tic Tac Toe</h1>
+    <h2 id="game-heading" aria-live="polite">Player 1's Turn</h2>
+    <table role="grid">
+      <tbody>
+        <tr>
+          <td><button class="game-square"></button></td>
+          <td><button class="game-square"></button></td>
+          <td><button class="game-square"></button></td>
+        </tr>
+        <tr>
+          <td><button class="game-square"></button></td>
+          <td><button class="game-square"></button></td>
+          <td><button class="game-square"></button></td>
+        </tr>
+        <tr>
+          <td><button class="game-square"></button></td>
+          <td><button class="game-square"></button></td>
+          <td><button class="game-square"></button></td>
+        </tr>
+      </tbody>
+    </table>
+    <button id="restart-button">Restart Game</button>
+  </div>
+</div>
+  
+  <script>
+    const COLUMNS = 3;
+    const ROWS = 3
+    var boards = new Array(COLUMNS).fill(null).map(_ => new Array(ROWS).fill(null));
+    var header = document.getElementById('game-heading');
+    var restartBtn = document.getElementById('restart-button');
+    var currentPlayer = 'X'
+    var gameOver = false;
+    var winner = null;
+    var attempts = 0;
+
+    restartBtn.addEventListener('click', () => {
+      document.querySelectorAll('.game-square').forEach((i) => i.disabled = false)
+      gameOver = false;
+      winner = null;
+      attempts = 0;
+      currentPlayer = "X";
+      boards = new Array(COLUMNS).fill(null).map(_ => new Array(ROWS).fill(null));
+      header.textContent = "Player 1's Turn"
+      restartBtn.style.display = "none";
+      document.querySelectorAll('.game-square').forEach((i) => i.textContent = "")
+    })
+
+    document.querySelectorAll('.game-square').forEach((item, index) => {
+
+      item.addEventListener('click', () => {
+        play(item, index)
+      })
+    })
+    function play(item, index) {
+      if (winner || gameOver) return
+      let col = index % COLUMNS;
+      let row = Math.floor(index / ROWS);
+      if (!boards[col][row]) {
+        attempts++;
+        item.textContent = currentPlayer;
+        boards[col][row] = currentPlayer;
+        item.disabled = true;
+        let checkHorizontal = checkWinner(col, row, 1, 0, currentPlayer)
+        let checkVertical = checkWinner(col, row, 0, 1, currentPlayer)
+        let checkDiagonalRight = checkWinner(col, row, 1, 1, currentPlayer)
+        let checkDigonalLeft = checkWinner(col, row, 1, -1, currentPlayer)
+        winner = (checkVertical || checkHorizontal || checkDiagonalRight || checkDigonalLeft) ? currentPlayer : null;
+
+        if (winner) {
+          header.textContent = `Player ${currentPlayer == "X" ? 1 : 2} Won!`
+        } else if (attempts == 9) {
+          gameOver = true;
+          header.textContent = "Tie Game!"
+        } else {
+          currentPlayer = currentPlayer == "X" ? "O" : "X";
+          header.textContent = `Player ${currentPlayer == "X" ? 1 : 2}'s Turn`
+        }
+        if (winner || gameOver) {
+          document.querySelectorAll('.game-square').forEach((i) => i.disabled = true)
+          restartBtn.style.display = "block"
+        }
+      }
+    }
+
+    function checkWinner(col, row, colIncrement, rowIncrement, currentPlayer) {
+      let i = row, j = col;
+      let k = 0;
+
+      while (j < COLUMNS && i < ROWS && boards[j][i] == currentPlayer) {
+        k++
+        i += rowIncrement;
+        j += colIncrement;
+      }
+      j = col - colIncrement;
+      i = row - rowIncrement;
+      while (j >= 0 && i >= 0 && boards[j][i] == currentPlayer) {
+        k++;
+        i -= rowIncrement;
+        j -= colIncrement;
+      }
+      return (k >= 3)
+    }
+
+  </script>
+</body>
+
+</html>
